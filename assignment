@@ -1,0 +1,62 @@
+---
+title: "Week_10"
+author: "Sara Cifuentes"
+date: '2022-05-19'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Hierarchical clustering analysis 
+## Cleaning
+
+```{r}
+library(ComplexHeatmap)
+library(tidyverse)
+library(magick)
+library(dplyr)
+library(circlize)
+```
+
+```{r}
+matrix_profile_ecoli <- read_delim("/Volumes/LaCie/PRISA/PanPlAn3_protocol/matrix_profile_ecoli_3.tsv", 
+                                   delim = "\t", escape_double = FALSE, 
+                                   trim_ws = TRUE)
+View(matrix_profile_ecoli)
+
+colnames(matrix_profile_ecoli)[1] <- "Annotation"
+```
+
+
+```{r}
+matrix_ecoli_samples <- matrix_profile_ecoli %>% 
+  rowwise() %>% 
+  rename_with(~gsub("_ecoli.csv", "", .x)) %>% 
+  mutate(gene_presence = sum(c_across(PR002:PR120))) %>% 
+  filter(gene_presence >= 3) %>% 
+  select((PR002:PR120), -PR019, -PR040, -PR044, -PR051, -PR071, -PR125, -PR126)
+```
+
+```{r}
+ht_opt$TITLE_PADDING = unit(c(2, 2), "points")
+
+colors <- c("yellow", "navyblue")
+
+Heatmap(matrix_ecoli_samples,
+        name = "presence=1/absence=0",
+        column_title = "Heatmap of dominant E. coli strains in each sample",
+        column_title_gp = gpar(frontsize = 10, fontface = "bold"),
+        row_title = "Genes",
+        col = colors,
+        column_names_gp = gpar(frontsize = 0.5),
+        column_dend_height = unit(1, "cm"),
+        clustering_distance_columns = "euclidean",
+        clustering_method_columns = "single",
+        show_row_dend = FALSE)
+```
+
+
+
+
